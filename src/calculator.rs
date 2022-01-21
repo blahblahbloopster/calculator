@@ -109,6 +109,9 @@ impl Calculator {
     }
 
     pub fn swap(&mut self) {
+        if self.stack.len() == 0 {
+            return;
+        }
         let first = self.stack.pop_back();
         let second = self.stack.pop_back();
         if first.is_none() || second.is_none() {

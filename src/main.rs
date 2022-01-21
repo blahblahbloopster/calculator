@@ -1,8 +1,8 @@
-use std::borrow::BorrowMut;
-use std::collections::VecDeque;
 use crate::calculator::{Calculator, Op};
 use std::io;
+use std::io::Write;
 use std::process::exit;
+use rug::{Assign, Float};
 
 mod calculator;
 
@@ -13,6 +13,16 @@ fn process(calc: &mut Calculator, inp: &str) {
 
     if inp == "d" || inp == "drop" {
         calc.drop();
+        return;
+    }
+
+    if inp == "p" || inp == "dup" {
+        calc.dup();
+        return;
+    }
+
+    if inp == "s" || inp == "swap" {
+        calc.swap();
         return;
     }
 
@@ -36,11 +46,15 @@ fn process(calc: &mut Calculator, inp: &str) {
         }
         calc.op(op.expect("wtf"));
     } else {
-        let num = inp.parse::<f64>();
-        if num.is_err() {
+        let parsed = Float::parse(inp);
+        // let num = inp.parse::<f64>();
+        if parsed.is_err() {
             return;
         }
-        calc.push(num.expect("wtf"));
+        let res = parsed.expect("wtf");
+        let mut num = Float::new(1024);  // TODO
+        num.assign(res);
+        calc.push(num.as_complex().clone());
     }
 }
 
@@ -50,13 +64,16 @@ fn main() {
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         calc.print();
+        print!("> ");
+        io::stdout().flush().expect("failed to flush?");
         let mut inp = String::new();
-        stdin.read_line(&mut inp);
+        stdin.read_line(&mut inp).expect("what");
         inp = inp.replace("\n", "");
         let mut last = String::new();
         let mut last_was_num = false;
+        let mut last_was_space = true;
         for c in inp.chars() {
-            if "0123456789.".contains(c) {
+            if "0123456789.".contains(c) || (c == '-' && last_was_space) {
                 if !last_was_num {
                     if !last.is_empty() {
                         process(&mut calc, last.as_str());
@@ -74,6 +91,7 @@ fn main() {
             if !c.is_whitespace() {
                 last.push(c);
             }
+            last_was_space = c.is_whitespace();
         }
         if !last.is_empty() {
             process(&mut calc, last.as_str());

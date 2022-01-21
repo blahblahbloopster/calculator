@@ -85,19 +85,21 @@ fn process(calc: &mut Calculator, inp: &str) {
         "*" => Option::Some(Op::MULTIPLY),
         "/" => Option::Some(Op::DIVIDE),
         "^" => Option::Some(Op::EXP),
+        "a" => Option::Some(Op::SIN),
+        "c" => Option::Some(Op::COS),
+        "t" => Option::Some(Op::TAN),
+        "n" => Option::Some(Op::COT),
+        "S" => Option::Some(Op::ASIN),
+        "C" => Option::Some(Op::ACOS),
+        "T" => Option::Some(Op::ATAN),
+        "l" => Option::Some(Op::SEC),
+        "k" => Option::Some(Op::CSC),
         _ => Option::None
     };
 
     if op.is_some() {
-        if op.is_none() {
-            println!("Failed to parse operation");
-            return;
-        }
-        if calc.stack.len() < 2 {
-            println!("Stack is empty");
-            return;
-        }
-        calc.op(op.expect("wtf"));
+        let o = op.unwrap();
+        calc.op(o);
     } else {
         let parsed = Float::parse(inp);
         if parsed.is_err() {
@@ -121,27 +123,30 @@ fn main() {
         let mut inp = String::new();
         stdin.read_line(&mut inp).expect("what");
         inp = inp.replace("\n", "").replace("pi", "z");
+        for rep in vec!["pi z", "sin a", "cos c", "tan t", "cot n", "asin S", "cot C", "atan T", "sec l", "csc k"] {
+            let split = rep.split_once(' ').expect("wat");
+            inp = inp.replace(split.0, split.1);
+        }
         let mut last = String::new();
         let mut last_was_num = false;
         let mut last_was_space = true;
         for c in inp.chars() {
             if "0123456789.".contains(c) || (c == '-' && last_was_space) {
-                if !last_was_num {
-                    if !last.is_empty() {
-                        process(&mut calc, last.as_str());
-                    }
+                last_was_num = true;
+                last.push(c);
+            } else {
+                if last_was_num {
+                    process(&mut calc, last.as_str());
                     last.clear();
                 }
-                last_was_num = true;
-            } else {
+                if !c.is_whitespace() {
+                    last.push(c);
+                }
                 if !last.is_empty() {
                     process(&mut calc, last.as_str());
                 }
                 last_was_num = false;
                 last.clear();
-            }
-            if !c.is_whitespace() {
-                last.push(c);
             }
             last_was_space = c.is_whitespace();
         }

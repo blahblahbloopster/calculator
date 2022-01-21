@@ -9,26 +9,53 @@ pub struct Calculator {
 }
 
 pub enum Op {
-    ADD, SUBTRACT, MULTIPLY, DIVIDE, EXP
+    ADD, SUBTRACT, MULTIPLY, DIVIDE, EXP,
+    SIN, COS, TAN, COT, ASIN, ACOS, ATAN, SEC, CSC
 }
 
 impl Op {
-    fn invoke(&self, a: Complex, b: Complex) -> Complex {
-        return match self {
-            Self::ADD => a + b,
-            Self::SUBTRACT => a - b,
-            Self::MULTIPLY => a * b,
-            Self::DIVIDE => a / b,
-            Self::EXP => a.pow(b.real())
+    fn invoke(&self, stack: &mut VecDeque<Complex>) -> Option<Complex> {
+        let bop = stack.pop_back();
+        if bop.is_none() {
+            return Option::None;
         }
+        let b = bop.unwrap();
+        return Option::Some(match self {
+            Self::SIN => b.sin(),
+            Self::COS => b.cos(),
+            Self::TAN => b.tan(),
+            Self::COT => b.tan().recip(),
+            Self::ASIN => b.asin(),
+            Self::ACOS => b.acos(),
+            Self::ATAN => b.atan(),
+            Self::SEC => b.cos().recip(),
+            Self::CSC => b.sin().recip(),
+            _ => {
+                let aop = stack.pop_back();
+                if aop.is_none() {
+                    return Option::None;
+                }
+                let a = aop.unwrap();
+                match self {
+                    Self::ADD => a + b,
+                    Self::SUBTRACT => a - b,
+                    Self::MULTIPLY => a * b,
+                    Self::DIVIDE => a / b,
+                    Self::EXP => a.pow(b.real()),
+                    _ => panic!("what")
+                }
+            }
+        })
     }
 }
 
 impl Calculator {
     pub fn op(&mut self, op: Op) {
-        let b = self.stack.pop_back().expect("Stack is empty!");  // TODO: single-arg function handling
-        let a = self.stack.pop_back().expect("Stack is empty!");
-        self.stack.push_back(op.invoke(a, b))
+        let value = op.invoke(&mut self.stack);
+        match value {
+            Option::Some(v) => self.stack.push_back(v),
+            Option::None => return
+        }
     }
 
     pub fn format_float(inp: &Float) -> String {

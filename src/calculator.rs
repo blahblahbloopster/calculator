@@ -10,7 +10,8 @@ pub struct Calculator {
 
 pub enum Op {
     ADD, SUBTRACT, MULTIPLY, DIVIDE, EXP,
-    SIN, COS, TAN, COT, ASIN, ACOS, ATAN, SEC, CSC
+    SIN, COS, TAN, COT, ASIN, ACOS, ATAN, SEC, CSC,
+    LN, LOG, LOGB
 }
 
 impl Op {
@@ -30,6 +31,8 @@ impl Op {
             Self::ATAN => b.atan(),
             Self::SEC => b.cos().recip(),
             Self::CSC => b.sin().recip(),
+            Self::LN => b.ln(),
+            Self::LOG => b.log10(),
             _ => {
                 let aop = stack.pop_back();
                 if aop.is_none() {
@@ -42,6 +45,7 @@ impl Op {
                     Self::MULTIPLY => a * b,
                     Self::DIVIDE => a / b,
                     Self::EXP => a.pow(b.real()),
+                    Self::LOGB => a.ln() / b.ln(),
                     _ => panic!("what")
                 }
             }

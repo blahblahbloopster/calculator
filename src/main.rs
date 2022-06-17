@@ -94,6 +94,9 @@ fn process(calc: &mut Calculator, inp: &str) {
         "T" => Option::Some(Op::ATAN),
         "l" => Option::Some(Op::SEC),
         "k" => Option::Some(Op::CSC),
+        "L" => Option::Some(Op::LN),
+        "O" => Option::Some(Op::LOG),
+        "b" => Option::Some(Op::LOGB),
         _ => Option::None
     };
 
@@ -106,7 +109,7 @@ fn process(calc: &mut Calculator, inp: &str) {
             return;
         }
         let res = parsed.expect("wtf");
-        let mut num = Float::new(1024);  // TODO
+        let mut num = Float::new(2048);  // TODO
         num.assign(res);
         calc.push(num.as_complex().clone());
     }
@@ -123,7 +126,7 @@ fn main() {
         let mut inp = String::new();
         stdin.read_line(&mut inp).expect("what");
         inp = inp.replace("\n", "").replace("pi", "z");
-        for rep in vec!["pi z", "sin a", "cos c", "tan t", "cot n", "asin S", "cot C", "atan T", "sec l", "csc k"] {
+        for rep in vec!["ln L", "log O", "logb b", "pi z", "sin a", "cos c", "tan t", "cot n", "asin S", "cot C", "atan T", "sec l", "csc k"] {
             let split = rep.split_once(' ').expect("wat");
             inp = inp.replace(split.0, split.1);
         }
